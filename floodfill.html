@@ -1,0 +1,144 @@
+<html>
+	<title>Floodfill, By Paul_VB </title>
+	<head>
+	<h1>Hello! welcome to floodfill, written in Javascript, by Paul_VB. </h1>
+
+	</head>
+	<body>
+		<table id="outer table" border="1px">
+			<tr>
+				<td>
+					<table>
+						<tr>
+							<td id="colorPicker" width="100px">
+									
+							</td>
+						</tr>
+						<tr>
+							<td id="turnCounter">
+								0 turns.
+							</td>
+						</tr>
+					</table>
+				</td>
+				<td>
+						<table id="table0" data-num_rows=0>
+
+						</table>
+				</td>
+			
+			</tr>
+
+		<script>
+			var squareSize="30px"; // how many pixles the game squares will be.
+			var boardDimensions=[20,20]; //how many squares will be on the board. 20x20 is a good amount
+			var numOfColors=8; //the number of indivisual colors that can be used. Be careful when adjusthing this. Each color should be manually defined in the baseColors array below
+			var baseColors=['Magenta','Purple','Red','Orange','Yellow','Green','Cyan','Blue'];//a definititon of all valid colors for the game board. valid colors are any valid HTML color. hex values should work in theory, but are untested.
+			
+			/**
+			buildGameArray. this functrion takes in 2 ints (the number of rows desired and number of columns desired) 
+			and returns a 2d array. this 2d array is filled with a random int between 0 and numOfColors-1, 
+			with each int value correspomnding to it's respective index in the vaseCOlors array
+			
+			*/
+			function buildGameArray(numOfRows,numOfColumns){
+			var gameArray=new Array(numOfRows);
+				for (var rowIndex=0;rowIndex < numOfRows; rowIndex++){
+					gameArray[rowIndex]=new Array(numOfColumns);
+					for (var columnIndex=0; columnIndex<numOfColumns;columnIndex++){
+						gameArray[rowIndex][columnIndex]=Math.floor(Math.random() * colors.length);
+
+
+					}
+				}
+				return gameArray;
+			};
+			
+			/**
+			reDrawGameboard. THis function takes in the pre-filled in gameArray from the buildGameArray function. 
+			It is meant to be run every time the gameboard is changed (I.E. every turn). it updates the HTML table by setting it's 
+			cells backgfround color to the approrate color from baseColors
+			
+			*/
+			function reDrawGameboard(gameArray){
+				var gameBoardID="table0";//the ID of the table where the game will be displayed on the HTML side.
+				var gameBoard = document.getElementById(gameBoardID);
+				gameBoard.innerHTML = "";
+				for (var rowIndex=0;rowIndex < gameArray.length; rowIndex++){//nested for loop, to loop thruy the 2d Array.
+					var currRow=gameBoard.insertRow(rowIndex);
+					for (var columnIndex=0; columnIndex<gameArray[0].length;columnIndex++){
+						
+						var currCell = currRow.insertCell(columnIndex);
+						currCell.dataset.row=rowIndex;
+						currCell.width=squareSize;
+						currCell.height=squareSize;
+						currCell.dataset.column=columnIndex;
+						currCell.ID="cell"+rowIndex+"."+columnIndex;
+						currCell.style.backgroundColor = colors[gameArray[rowIndex][columnIndex]]; 
+						
+
+
+					}
+				
+				}
+			};
+			
+			/**
+			FloodFIll. The recursive funtiuon that is at the heart of floodfill. the cellrow and cellCol are the co-oridnates of the cell the algorith is checking,
+			the targetColorIndex is the index in baseColors with the same color as the origiin (0,0), and replacementColorIndex is the index in baseColors with 
+			the color the cells should be changed to. if this function is called with invalid co-ordinates (arrya index out of bounds) then the function will simply return.	
+			*/
+			
+			function floodFill(cellRow,cellCol,targetColorIndex,replacementColorIndex){
+				if (cellRow<0 || cellCol <0 || cellRow>=gameBoard.length || cellCol>=gameBoard[0].length){
+					return;
+				}
+				var currCell=gameBoard[cellRow][cellCol];
+				if (gameBoard[cellRow][cellCol]!=targetColorIndex){
+					return;
+				}
+				gameBoard[cellRow][cellCol]=replacementColorIndex;
+				floodFill(cellRow+1,cellCol,targetColorIndex,replacementColorIndex);
+				floodFill(cellRow-1,cellCol,targetColorIndex,replacementColorIndex);
+				floodFill(cellRow,cellCol-1,targetColorIndex,replacementColorIndex);
+				floodFill(cellRow,cellCol+1,targetColorIndex,replacementColorIndex);
+				return;
+			};
+			
+			
+			/*a slice of the baseColor index. 
+			this is where all the colors for this run of the game will be kept. 
+			it is used in lieu of baseColors direcly, since this way allows the maximin number 
+			of colors used and the valid color types to be defined separatly. */
+			var colors=baseColors.slice(0, numOfColors);
+			
+			
+
+			var gameBoard=buildGameArray(boardDimensions[0],boardDimensions[1]);
+			reDrawGameboard(gameBoard);
+			
+			
+			/*this is where all the colored buttons get defined and added to the HTML side. 
+			their action is the floodfill function with their respective colors as trhe replacement color, 
+			update the HTML table with the new colors, and incrememnt the turn counter*/
+			var colorButtonPanel = document.getElementById("colorPicker");
+			var numOfTurns=0;
+			for (var colorIndex=0;colorIndex < colors.length;colorIndex++){
+				var newButton = document.createElement("BUTTON");
+				newButton.style="background-color:"+colors[colorIndex]+";width:"+colorButtonPanel.width+";height:"+squareSize;
+				newButton.width="100px";
+				newButton.c=colors[colorIndex];
+				newButton.colorIndex=colorIndex;
+				newButton.addEventListener('click',function () {floodFill(0,0,gameBoard[0][0],this.colorIndex);console.log("done doing color: "+colors[this.colorIndex]);reDrawGameboard(gameBoard);numOfTurns++;document.getElementById("turnCounter").innerHTML=numOfTurns+" turns."; },false);
+				colorButtonPanel.appendChild(newButton);
+			
+			}
+			reDrawGameboard(gameBoard)
+			//alert("it verks!"); //a debug line. It gets run if the code dosnt crash. commented out for regular useage.
+		
+		</script>
+
+
+	</body>
+
+</html>
